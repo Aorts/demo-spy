@@ -1,17 +1,17 @@
-# Spaya Demos
+# Spaya CRM Demo
 
-Static HTML demos deployed to GitHub Pages.
+Static HTML dashboard demo, hosted on GitHub Pages.
 
-- `index.html` — landing page that links to both demos
-- `Spaya-CRM-Dashboard.html` — CRM dashboard (Priority 2 requirements)
-- `landing-page-demo.html` — SaaS landing page demo
+- `index.html` — the Spaya CRM dashboard (what the client sees when they open the site)
+- `Spaya-CRM-Dashboard.html` — same file, kept under its descriptive name
+- `crm-dashboard-requirements.md` — source requirements
 
 ## One-time setup
 
 1. Push this repo to GitHub.
 2. In the repo: **Settings → Pages → Build and deployment → Source** → set to **GitHub Actions**.
 3. Push to `main` (or click "Run workflow" in the Actions tab).
-4. The workflow publishes to `https://<username>.github.io/<repo>/`.
+4. The workflow publishes to `https://<username>.github.io/<repo>/` — share that link with the client.
 
 ## How it works
 
@@ -21,7 +21,7 @@ Static HTML demos deployed to GitHub Pages.
 2. Uploads the repo root as a Pages artifact.
 3. Deploys the artifact to GitHub Pages.
 
-No build step — the files are served as-is.
+No build step — files are served as-is.
 
 ## Local preview
 

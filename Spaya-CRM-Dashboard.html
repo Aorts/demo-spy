@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Spaya · CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Spaya brand palette */
+    --cream: #F4ECDF;
+    --cream-soft: #FBF6EC;
+    --cream-deep: #EDE3D2;
+    --ink: #1F1A17;
+    --ink-soft: #3B302A;
+    --mute: #7A6E63;
+    --purple: #4A2C6E;
+    --purple-soft: #6A3FA0;
+    --purple-tint: #EFE6F7;
+    --terra: #D9603A;
+    --terra-dark: #8B3818;
+    --gold: #C9A55C;
+    --olive: #5F6E3D;
+    --olive-soft: #E4E7D3;
+    --peach: #F8E2D5;
+    --line: #E4D8C4;
+    --line-soft: #EFE6DA;
+    --success: #4F7A2F;
+    --danger: #C24A1F;
+    --info: #4A6B8A;
+
+    --radius: 14px;
+    --radius-sm: 8px;
+    --shadow: 0 2px 8px rgba(31,26,23,0.06);
+    --shadow-lg: 0 12px 32px rgba(31,26,23,0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.5;
+    overflow: hidden;
+  }
+  .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+  .serif { font-family: Georgia, 'Times New Roman', serif; }
+
+  /* ============ LAYOUT ============ */
+  .app { display: flex; height: 100vh; }
+
+  /* ---------- SIDEBAR ---------- */
+  .sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    background: var(--ink);
+    color: var(--cream);
+    padding: 22px 14px;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--ink-soft);
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 8px 22px;
+    border-bottom: 1px solid rgba(244,236,223,0.1);
+    margin-bottom: 14px;
+  }
+  .brand-mark {
+    width: 36px; height: 36px;
+    background: var(--purple);
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 22px;
+    color: var(--cream);
+  }
+  .brand-text {
+    font-family: Georgia, serif;
+    font-size: 17px;
+    letter-spacing: 0.02em;
+  }
+  .brand-text .dot { color: var(--gold); margin: 0 4px; }
+
+  .nav-section {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(244,236,223,0.5);
+    padding: 14px 10px 6px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    color: rgba(244,236,223,0.85);
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 500;
+    transition: background 0.15s, color 0.15s;
+    user-select: none;
+  }
+  .nav-item:hover { background: rgba(244,236,223,0.06); color: var(--cream); }
+  .nav-item.active {
+    background: var(--purple);
+    color: var(--cream);
+  }
+  .nav-item .icon { width: 18px; text-align: center; opacity: 0.9; }
+  .nav-item .badge {
+    margin-left: auto;
+    background: var(--terra);
+    color: var(--cream);
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 12px 8px;
+    border-top: 1px solid rgba(244,236,223,0.1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--ink);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .me-name { font-size: 13px; font-weight: 600; }
+  .me-role { font-size: 11px; color: rgba(244,236,223,0.5); }
+
+  /* ---------- MAIN ---------- */
+  .main {
+    flex: 1;
+    overflow-y: auto;
+    background: var(--cream);
+  }
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(244,236,223,0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .topbar h1 {
+    font-family: Georgia, serif;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .topbar .crumb {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--mute);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .topbar .spacer { flex: 1; }
+  .search {
+    background: var(--cream-soft);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-size: 13px;
+    width: 240px;
+    color: var(--ink);
+    font-family: inherit;
+  }
+  .search:focus { outline: none; border-color: var(--purple); }
+  .branch-select {
+    background: var(--cream-soft);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .icon-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--cream-soft);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    position: relative;
+  }
+  .icon-btn .dot-red {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 8px; height: 8px;
+    background: var(--terra);
+    border-radius: 50%;
+    border: 2px solid var(--cream-soft);
+  }
+
+  .content { padding: 24px 28px 64px; }
+
+  /* ---------- PAGE TOGGLES ---------- */
+  .page { display: none; }
+  .page.active { display: block; animation: fadeIn 0.35s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---------- KPI ---------- */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .kpi {
+    background: var(--cream-soft);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi::after {
+    content: "";
+    position: absolute;
+    top: 0; right: 0;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: var(--accent, var(--purple-tint));
+    transform: translate(30%, -30%);
+    opacity: 0.55;
+  }
+  .kpi.purple { --accent: var(--purple-tint); }
+  .kpi.peach  { --accent: var(--peach); }
+  .kpi.olive  { --accent: var(--olive-soft); }
+  .kpi.gold   { --accent: #F2E5C2; }
+  .kpi-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--mute);
+    margin-bottom: 6px;
+    position: relative;
+    z-index: 1;
+  }
+  .kpi-value {
+    font-family: Georgia, serif;
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 4px;
+    position: relative;
+    z-index: 1;
+  }
+  .kpi-delta {
+    font-size: 11.5px;
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
+  }
+  .kpi-delta.up   { color: var(--success); }
+  .kpi-delta.down { color: var(--danger); }
+  .kpi-delta .sub { color: var(--mute); font-weight: 400; }
+
+  /* ---------- CARDS / SECTIONS ---------- */
+  .row {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .row-2 { grid-template-columns: 2fr 1fr; }
+  .row-3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 1100px) {
+    .row-2, .row-3 { grid-template-columns: 1fr; }
+  }
+  .card {
+    background: var(--cream-soft);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .card-title {
+    font-family: Georgia, serif;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .card-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--mute);
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: var(--cream-deep);
+    color: var(--ink-soft);
+  }
+  .pill.fb     { background: #E0EAFF; color: #2B4A8B; }
+  .pill.line   { background: #D8F0D2; color: #2E5A1E; }
+  .pill.ig     { background: #FDE0EC; color: #9B3262; }
+  .pill.web    { background: var(--cream-deep); color: var(--ink-soft); }
+  .pill.open   { background: #E0EAFF; color: #2B4A8B; }
+  .pill.pending{ background: #F8E2D5; color: var(--terra-dark); }
+  .pill.closed { background: var(--olive-soft); color: var(--olive); }
+  .pill.vip    { background: #F2E5C2; color: #7A5A14; }
+  .pill.lead   { background: var(--purple-tint); color: var(--purple); }
+
+  /* ---------- TABLES ---------- */
+  table { width: 100%; border-collapse: collapse; }
+  th, td {
+    text-align: left;
+    padding: 11px 10px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: middle;
+  }
+  th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--mute);
+    font-weight: 500;
+    border-bottom: 1px solid var(--line);
+  }
+  tbody tr { transition: background 0.12s; }
+  tbody tr:hover { background: var(--cream-deep); cursor: pointer; }
+
+  /* ---------- CHARTS ---------- */
+  .chart-canvas { width: 100%; height: 220px; }
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    height: 200px;
+    padding: 12px 4px 4px;
+  }
+  .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .bars { display: flex; gap: 4px; align-items: flex-end; height: 170px; width: 100%; justify-content: center; }
+  .bar {
+    width: 14px;
+    border-radius: 4px 4px 0 0;
+    background: var(--purple);
+    transition: height 0.5s cubic-bezier(.2,.7,.3,1);
+  }
+  .bar.b { background: var(--terra); }
+  .bar-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--mute);
+    text-transform: uppercase;
+  }
+  .legend {
+    display: flex;
+    gap: 14px;
+    font-size: 11px;
+    color: var(--mute);
+  }
+  .legend .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+
+  /* ---------- LEAD PIPELINE ---------- */
+  .pipeline {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+  .stage {
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .stage-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .stage-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--mute);
+  }
+  .stage-count {
+    font-family: Georgia, serif;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .lead-card {
+    background: var(--cream-soft);
+    border: 1px solid var(--line-soft);
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    font-size: 12px;
+  }
+  .lead-card .who { font-weight: 600; }
+  .lead-card .meta { color: var(--mute); font-size: 11px; margin-top: 2px; }
+
+  /* ---------- CUSTOMER LIST ---------- */
+  .customer-row {
+    display: grid;
+    grid-template-columns: 40px 1.5fr 1fr 1fr 100px 80px;
+    gap: 12px;
+    align-items: center;
+    padding: 11px 10px;
+    border-bottom: 1px solid var(--line-soft);
+    cursor: pointer;
+  }
+  .customer-row:hover { background: var(--cream-deep); }
+  .customer-row .avatar { width: 36px; height: 36px; }
+  .c-name { font-weight: 600; }
+  .c-sub { font-size: 11.5px; color: var(--mute); }
+  .ltv { font-family: Georgia, serif; font-weight: 600; }
+
+  /* ---------- INBOX ---------- */
+  .conv {
+    display: flex;
+    gap: 10px;
+    padding: 10px 6px;
+    border-bottom: 1px solid var(--line-soft);
+    cursor: pointer;
+  }
+  .conv:hover { background: var(--cream-deep); }
+  .conv .avatar { width: 32px; height: 32px; flex-shrink: 0; }
+  .conv-body { flex: 1; min-width: 0; }
+  .conv-top { display: flex; justify-content: space-between; margin-bottom: 2px; }
+  .conv-name { font-weight: 600; font-size: 13px; }
+  .conv-time { font-size: 11px; color: var(--mute); }
+  .conv-snip {
+    color: var(--mute);
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .unread .conv-snip { color: var(--ink); font-weight: 500; }
+
+  /* ---------- SHIPMENTS ---------- */
+  .ship-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .ship-status .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .ship-status.delivered .dot { background: var(--success); }
+  .ship-status.transit .dot { background: var(--gold); }
+  .ship-status.pickup .dot { background: var(--info); }
+  .ship-status.failed .dot { background: var(--danger); }
+
+  /* ---------- UTILITIES ---------- */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .flex-between { display: flex; justify-content: space-between; align-items: center; }
+  .muted { color: var(--mute); }
+  .small { font-size: 12px; }
+  .mt-12 { margin-top: 12px; }
+  .mt-20 { margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">S</div>
+      <div class="brand-text">Spaya<span class="dot">·</span>CRM</div>
+    </div>
+
+    <div class="nav-section">Workspace</div>
+    <div class="nav-item active" data-page="overview"><span class="icon">⌂</span>Overview</div>
+    <div class="nav-item" data-page="inbox"><span class="icon">✉</span>Inbox<span class="badge">12</span></div>
+    <div class="nav-item" data-page="customers"><span class="icon">◉</span>Customers</div>
+    <div class="nav-item" data-page="leads"><span class="icon">◇</span>Leads</div>
+    <div class="nav-item" data-page="quotes"><span class="icon">$</span>Quotes</div>
+    <div class="nav-item" data-page="shipping"><span class="icon">⊞</span>Shipping</div>
+
+    <div class="nav-section">Insights</div>
+    <div class="nav-item" data-page="analytics"><span class="icon">▦</span>Analytics</div>
+    <div class="nav-item" data-page="team"><span class="icon">☷</span>Team</div>
+    <div class="nav-item" data-page="reports"><span class="icon">≡</span>Reports</div>
+
+    <div class="sidebar-footer">
+      <div class="avatar">NK</div>
+      <div>
+        <div class="me-name">Nok K.</div>
+        <div class="me-role">Admin · Bangkok</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <div class="crumb">Workspace</div>
+        <h1 id="pageTitle">Overview</h1>
+      </div>
+      <div class="spacer"></div>
+      <input class="search" id="globalSearch" placeholder="Search customers, orders, conversations…" />
+      <select class="branch-select" id="branchSelect">
+        <option value="all">All branches</option>
+        <option value="bkk">Bangkok</option>
+        <option value="lpg">Lampang</option>
+      </select>
+      <button class="icon-btn" title="Notifications">
+        🔔<span class="dot-red"></span>
+      </button>
+    </header>
+
+    <div class="content">
+
+      <!-- ============ OVERVIEW ============ -->
+      <div class="page active" id="page-overview">
+
+        <!-- KPIs -->
+        <div class="kpi-grid">
+          <div class="kpi purple">
+            <div class="kpi-label">Revenue · Today</div>
+            <div class="kpi-value" id="kpi-revenue">฿184,520</div>
+            <div class="kpi-delta up">▲ 12.4% <span class="sub">vs yesterday</span></div>
+          </div>
+          <div class="kpi peach">
+            <div class="kpi-label">Deals Closed · MTD</div>
+            <div class="kpi-value">328</div>
+            <div class="kpi-delta up">▲ 8.1% <span class="sub">vs last month</span></div>
+          </div>
+          <div class="kpi olive">
+            <div class="kpi-label">Chat → Order</div>
+            <div class="kpi-value">24.6%</div>
+            <div class="kpi-delta up">▲ 2.3 pp</div>
+          </div>
+          <div class="kpi gold">
+            <div class="kpi-label">Avg. Response Time</div>
+            <div class="kpi-value">4m 12s</div>
+            <div class="kpi-delta down">▼ 38s <span class="sub">faster</span></div>
+          </div>
+        </div>
+
+        <!-- Social summary + Recent conversations -->
+        <div class="row row-2">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Social Media Summary</div>
+                <div class="card-sub">Last 7 days</div>
+              </div>
+              <div class="legend">
+                <span><span class="dot" style="background:var(--purple)"></span>Bangkok</span>
+                <span><span class="dot" style="background:var(--terra)"></span>Lampang</span>
+              </div>
+            </div>
+
+            <div class="grid-2" style="margin-bottom: 16px;">
+              <div>
+                <div class="card-sub" style="margin-bottom:6px;">Facebook</div>
+                <div class="flex-between"><span class="small muted">Inbox · unread</span><strong class="mono">47 / 12</strong></div>
+                <div class="flex-between"><span class="small muted">Post engagement</span><strong class="mono">8,412</strong></div>
+                <div class="flex-between"><span class="small muted">Ad leads</span><strong class="mono">128</strong></div>
+              </div>
+              <div>
+                <div class="card-sub" style="margin-bottom:6px;">LINE Official</div>
+                <div class="flex-between"><span class="small muted">Active chats</span><strong class="mono">38</strong></div>
+                <div class="flex-between"><span class="small muted">New followers</span><strong class="mono">+214</strong></div>
+                <div class="flex-between"><span class="small muted">Broadcast CTR</span><strong class="mono">11.8%</strong></div>
+              </div>
+            </div>
+
+            <div class="bar-chart" id="socialChart"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">Unified Inbox</div>
+              <span class="pill">12 unread</span>
+            </div>
+            <div id="inboxList"></div>
+          </div>
+        </div>
+
+        <!-- Sales Performance + Top customers -->
+        <div class="row row-2">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Sales Performance</div>
+                <div class="card-sub">Daily · This week</div>
+              </div>
+              <select class="branch-select" style="font-size:12px;padding:5px 10px;">
+                <option>This week</option>
+                <option>Last week</option>
+                <option>This month</option>
+              </select>
+            </div>
+            <canvas id="salesChart" class="chart-canvas"></canvas>
+            <div class="legend mt-12">
+              <span><span class="dot" style="background:var(--purple)"></span>Revenue (฿)</span>
+              <span><span class="dot" style="background:var(--gold)"></span>Orders</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">Top Customers · MTD</div>
+              <span class="card-sub">By LTV</span>
+            </div>
+            <div id="topCustomers"></div>
+          </div>
+        </div>
+
+        <!-- Lead pipeline -->
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Lead Pipeline</div>
+              <div class="card-sub">New → Contacted → Quoted → Negotiating → Won</div>
+            </div>
+            <span class="pill lead">42 active leads</span>
+          </div>
+          <div class="pipeline" id="pipeline"></div>
+        </div>
+
+      </div>
+
+      <!-- ============ INBOX ============ -->
+      <div class="page" id="page-inbox">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Unified Inbox</div>
+              <div class="card-sub">Facebook · LINE · Instagram · Web chat</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <span class="pill open">Open · 24</span>
+              <span class="pill pending">Pending · 8</span>
+              <span class="pill closed">Closed · 116</span>
+            </div>
+          </div>
+          <div id="inboxFull"></div>
+        </div>
+      </div>
+
+      <!-- ============ CUSTOMERS ============ -->
+      <div class="page" id="page-customers">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Customer Database</div>
+              <div class="card-sub">ประวัติลูกค้า · 1,284 records</div>
+            </div>
+            <input class="search" id="custSearch" placeholder="Search by name, phone, LINE ID…" style="width:280px;">
+          </div>
+
+          <div class="customer-row" style="background:var(--cream);font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--mute);cursor:default;">
+            <div></div>
+            <div>Customer</div>
+            <div>Contact</div>
+            <div>Tags</div>
+            <div>LTV</div>
+            <div>Orders</div>
+          </div>
+          <div id="customerList"></div>
+        </div>
+      </div>
+
+      <!-- ============ LEADS ============ -->
+      <div class="page" id="page-leads">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Lead Pipeline</div>
+              <div class="card-sub">Drag-to-move not enabled in this demo</div>
+            </div>
+            <select class="branch-select" style="font-size:12px;padding:5px 10px;">
+              <option>All sources</option>
+              <option>Facebook Ads</option>
+              <option>LINE OA</option>
+              <option>Instagram</option>
+              <option>Walk-in</option>
+            </select>
+          </div>
+          <div class="pipeline" id="pipelineFull"></div>
+        </div>
+
+        <div class="row row-2 mt-20" style="margin-top:14px;">
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">Lead Source Performance</div>
+              <div class="card-sub">Conversion %</div>
+            </div>
+            <div id="sourceChart"></div>
+          </div>
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">Lost Deal Reasons</div>
+              <div class="card-sub">Last 30 days</div>
+            </div>
+            <div id="lostReasons"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ QUOTES ============ -->
+      <div class="page" id="page-quotes">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Price Check &amp; Quote History</div>
+              <div class="card-sub">Quotes given but not yet purchased</div>
+            </div>
+            <span class="pill pending">23 awaiting follow-up</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Product</th>
+                <th>Quoted</th>
+                <th>Channel</th>
+                <th>Days ago</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="quotesTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ SHIPPING ============ -->
+      <div class="page" id="page-shipping">
+        <div class="kpi-grid">
+          <div class="kpi olive">
+            <div class="kpi-label">In transit</div>
+            <div class="kpi-value">86</div>
+            <div class="kpi-delta up">Flash Express</div>
+          </div>
+          <div class="kpi peach">
+            <div class="kpi-label">Out for delivery</div>
+            <div class="kpi-value">24</div>
+            <div class="kpi-delta up">Today</div>
+          </div>
+          <div class="kpi gold">
+            <div class="kpi-label">COD pending</div>
+            <div class="kpi-value">฿42,180</div>
+            <div class="kpi-delta down">▼ 5 parcels</div>
+          </div>
+          <div class="kpi purple">
+            <div class="kpi-label">Failed / Return</div>
+            <div class="kpi-value">3</div>
+            <div class="kpi-delta down">Needs review</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Recent Shipments</div>
+              <div class="card-sub">Flash Express · Live tracking</div>
+            </div>
+            <span class="pill">Auto-sync · 2 min ago</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Tracking #</th>
+                <th>Customer</th>
+                <th>Branch</th>
+                <th>COD</th>
+                <th>Updated</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="shipTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ ANALYTICS ============ -->
+      <div class="page" id="page-analytics">
+        <div class="row row-2">
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">Top Products · by Region</div>
+              <div class="card-sub">Bangkok vs Lampang</div>
+            </div>
+            <div id="topProducts"></div>
+          </div>
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">CAC per Channel</div>
+              <div class="card-sub">Customer acquisition cost</div>
+            </div>
+            <div id="cacChart"></div>
+          </div>
+        </div>
+        <div class="row row-2" style="margin-top:14px;">
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">Peak Inquiry Hours</div>
+              <div class="card-sub">For staffing optimization</div>
+            </div>
+            <canvas id="hoursChart" class="chart-canvas"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">Repeat Purchase Rate</div>
+              <div class="card-sub">Last 90 days</div>
+            </div>
+            <div style="text-align:center;padding:20px 0;">
+              <div style="font-family:Georgia,serif;font-size:64px;font-weight:600;color:var(--purple);">42<span style="font-size:32px;">%</span></div>
+              <div class="muted small">of customers placed 2+ orders</div>
+              <div class="mt-20 small">
+                <div class="flex-between"><span class="muted">Dormant (60d+)</span><strong>184 customers</strong></div>
+                <div class="flex-between"><span class="muted">Churn rate</span><strong>8.2%</strong></div>
+                <div class="flex-between"><span class="muted">Avg. orders / customer</span><strong>2.6</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ TEAM ============ -->
+      <div class="page" id="page-team">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Agent Performance · MTD</div>
+              <div class="card-sub">Workload distribution</div>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Branch</th>
+                <th>Chats</th>
+                <th>Avg. Response</th>
+                <th>Deals Closed</th>
+                <th>Revenue</th>
+              </tr>
+            </thead>
+            <tbody id="teamTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ REPORTS ============ -->
+      <div class="page" id="page-reports">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Reports</div>
+              <div class="card-sub">Auto-emailed daily / weekly</div>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Report</th><th>Frequency</th><th>Recipients</th><th>Last sent</th><th></th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Daily sales summary</strong></td><td>Daily · 9 AM</td><td>3 admins</td><td class="muted">Today · 9:00</td><td><button class="branch-select" style="font-size:11px;">Export CSV</button></td></tr>
+              <tr><td><strong>Weekly branch comparison</strong></td><td>Mon · 8 AM</td><td>5 recipients</td><td class="muted">Mon · 8:01</td><td><button class="branch-select" style="font-size:11px;">Export CSV</button></td></tr>
+              <tr><td><strong>Monthly CAC by channel</strong></td><td>1st of month</td><td>2 recipients</td><td class="muted">May 1 · 9:00</td><td><button class="branch-select" style="font-size:11px;">Export CSV</button></td></tr>
+              <tr><td><strong>COD reconciliation</strong></td><td>Weekly · Fri</td><td>Finance team</td><td class="muted">Fri · 17:00</td><td><button class="branch-select" style="font-size:11px;">Export CSV</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+/* ============ DEMO DATA ============ */
+const customers = [
+  { name: "Khun Anong S.", phone: "081-234-5678", line: "@anong_s", tags: ["vip","repeat"], ltv: 184500, orders: 32, branch: "bkk", avatar: "AS" },
+  { name: "Khun Mali P.", phone: "089-555-1212", line: "mali_pp", tags: ["repeat"], ltv: 92340, orders: 18, branch: "lpg", avatar: "MP" },
+  { name: "Khun Somchai T.", phone: "092-111-4422", line: "somchai88", tags: ["vip"], ltv: 76900, orders: 14, branch: "bkk", avatar: "ST" },
+  { name: "Khun Pim L.", phone: "086-998-7755", line: "pim.l", tags: ["lead"], ltv: 0, orders: 0, branch: "bkk", avatar: "PL" },
+  { name: "Khun Tan K.", phone: "095-432-1100", line: "tan_kk", tags: ["repeat"], ltv: 58220, orders: 11, branch: "lpg", avatar: "TK" },
+  { name: "Khun Nat W.", phone: "088-321-9090", line: "nat_w", tags: ["vip","repeat"], ltv: 145000, orders: 24, branch: "bkk", avatar: "NW" },
+  { name: "Khun Pla R.", phone: "082-101-2020", line: "pla.r", tags: ["dormant"], ltv: 12400, orders: 3, branch: "lpg", avatar: "PR" },
+  { name: "Khun Bee J.", phone: "087-654-3210", line: "@bee_j", tags: ["lead"], ltv: 0, orders: 0, branch: "bkk", avatar: "BJ" }
+];
+
+const conversations = [
+  { name: "Khun Anong S.", channel: "line", snippet: "ขอเช็คราคารุ่น Premium ค่ะ", time: "2m", unread: true },
+  { name: "Khun Mali P.", channel: "fb", snippet: "Order #4421 — when will it arrive?", time: "12m", unread: true },
+  { name: "Khun Pim L.", channel: "ig", snippet: "ส่งไปลำปางได้ไหมคะ", time: "28m", unread: true },
+  { name: "Khun Somchai T.", channel: "web", snippet: "Looking for the new collection", time: "1h", unread: false },
+  { name: "Khun Tan K.", channel: "line", snippet: "ขอบคุณค่ะ ได้รับของแล้ว", time: "2h", unread: false },
+  { name: "Khun Nat W.", channel: "fb", snippet: "Reorder same as last month please", time: "3h", unread: false },
+  { name: "Khun Bee J.", channel: "ig", snippet: "Hi! interested in your products 👋", time: "5h", unread: true },
+  { name: "Khun Pla R.", channel: "line", snippet: "เริ่มมีโปรใหม่ๆไหมคะ", time: "1d", unread: false }
+];
+
+const leadStages = [
+  { name: "New", count: 18, leads: [
+    { who: "Khun Bee J.", meta: "Instagram · 2h ago" },
+    { who: "Khun Pim L.", meta: "FB Ads · 4h ago" },
+    { who: "Khun Mike R.", meta: "LINE OA · 5h ago" }
+  ]},
+  { name: "Contacted", count: 11, leads: [
+    { who: "Khun Som K.", meta: "Bangkok · Yesterday" },
+    { who: "Khun Lek N.", meta: "Lampang · 2d ago" }
+  ]},
+  { name: "Quoted", count: 7, leads: [
+    { who: "Khun Wan P.", meta: "฿18,500 · 1d ago" },
+    { who: "Khun Pong T.", meta: "฿42,200 · 3d ago" }
+  ]},
+  { name: "Negotiating", count: 4, leads: [
+    { who: "Khun Aey M.", meta: "฿9,800 · waiting" }
+  ]},
+  { name: "Won", count: 22, leads: [
+    { who: "Khun Anong S.", meta: "฿24,500 · Closed today" },
+    { who: "Khun Nat W.", meta: "฿88,000 · Yesterday" }
+  ]}
+];
+
+const quotes = [
+  { who: "Khun Wan P.", product: "Premium Set A · 2x", price: "฿18,500", channel: "line", days: 1, status: "pending" },
+  { who: "Khun Pong T.", product: "Bulk order — 50 units", price: "฿42,200", channel: "fb", days: 3, status: "pending" },
+  { who: "Khun Aey M.", product: "Starter pack", price: "฿9,800", channel: "ig", days: 4, status: "negotiating" },
+  { who: "Khun Joy S.", product: "Premium Set B", price: "฿28,400", channel: "line", days: 6, status: "pending" },
+  { who: "Khun Bom L.", product: "Custom blend · 12 units", price: "฿14,200", channel: "fb", days: 8, status: "lost" },
+  { who: "Khun Pla R.", product: "Refill pack", price: "฿4,200", channel: "line", days: 12, status: "lost" }
+];
+
+const shipments = [
+  { tracking: "TH4501987234", who: "Khun Anong S.", branch: "Bangkok", cod: "฿2,400", updated: "5 min ago", status: "transit" },
+  { tracking: "TH4501987108", who: "Khun Mali P.", branch: "Lampang", cod: "฿1,890", updated: "12 min ago", status: "pickup" },
+  { tracking: "TH4501986991", who: "Khun Somchai T.", branch: "Bangkok", cod: "—", updated: "1 h ago", status: "delivered" },
+  { tracking: "TH4501986880", who: "Khun Nat W.", branch: "Bangkok", cod: "฿5,200", updated: "2 h ago", status: "transit" },
+  { tracking: "TH4501986771", who: "Khun Tan K.", branch: "Lampang", cod: "฿1,100", updated: "3 h ago", status: "delivered" },
+  { tracking: "TH4501986662", who: "Khun Pla R.", branch: "Lampang", cod: "฿620", updated: "Yesterday", status: "failed" }
+];
+
+const team = [
+  { name: "Nok K.", branch: "Bangkok", chats: 142, rt: "3m 22s", closed: 48, rev: "฿412,300" },
+  { name: "Ploy S.", branch: "Bangkok", chats: 128, rt: "4m 01s", closed: 41, rev: "฿368,100" },
+  { name: "Aon T.", branch: "Lampang", chats: 96, rt: "5m 14s", closed: 32, rev: "฿221,400" },
+  { name: "Mint W.", branch: "Lampang", chats: 88, rt: "4m 48s", closed: 29, rev: "฿198,900" },
+  { name: "Fern P.", branch: "Bangkok", chats: 76, rt: "6m 02s", closed: 24, rev: "฿162,500" }
+];
+
+const lostReasons = [
+  { reason: "Price too high", pct: 38 },
+  { reason: "Out of stock", pct: 22 },
+  { reason: "Found another supplier", pct: 18 },
+  { reason: "No response", pct: 14 },
+  { reason: "Wrong product fit", pct: 8 }
+];
+
+const sourcePerf = [
+  { source: "Facebook Ads", pct: 28, color: "#4A6B8A" },
+  { source: "LINE OA", pct: 34, color: "#5F6E3D" },
+  { source: "Instagram", pct: 19, color: "#D9603A" },
+  { source: "Walk-in", pct: 42, color: "#4A2C6E" },
+  { source: "Referral", pct: 51, color: "#C9A55C" }
+];
+
+const topProducts = [
+  { name: "Premium Set A", bkk: 124, lpg: 68 },
+  { name: "Refill Pack 200ml", bkk: 98, lpg: 82 },
+  { name: "Gift Box · Limited", bkk: 76, lpg: 41 },
+  { name: "Starter Kit", bkk: 64, lpg: 56 },
+  { name: "Custom Blend", bkk: 48, lpg: 22 }
+];
+
+const cacData = [
+  { ch: "Facebook Ads", cost: 184, color: "#4A6B8A" },
+  { ch: "LINE OA", cost: 92, color: "#5F6E3D" },
+  { ch: "Instagram", cost: 220, color: "#D9603A" },
+  { ch: "Google", cost: 312, color: "#4A2C6E" },
+  { ch: "Referral", cost: 38, color: "#C9A55C" }
+];
+
+/* ============ ICONS ============ */
+function channelPill(ch) {
+  const labels = { fb: "FB", line: "LINE", ig: "IG", web: "Web" };
+  return `<span class="pill ${ch}">${labels[ch]}</span>`;
+}
+function tagPill(t) {
+  return `<span class="pill ${t}">${t.toUpperCase()}</span>`;
+}
+function initials(name) {
+  return name.replace("Khun ", "").split(" ").map(w => w[0]).slice(0,2).join("");
+}
+
+/* ============ RENDER: OVERVIEW ============ */
+
+// Social bar chart
+function renderSocialChart() {
+  const data = [
+    { label: "Mon", a: 60, b: 32 },
+    { label: "Tue", a: 78, b: 41 },
+    { label: "Wed", a: 92, b: 38 },
+    { label: "Thu", a: 65, b: 52 },
+    { label: "Fri", a: 110, b: 64 },
+    { label: "Sat", a: 134, b: 78 },
+    { label: "Sun", a: 96, b: 58 }
+  ];
+  const max = Math.max(...data.flatMap(d => [d.a, d.b]));
+  const el = document.getElementById("socialChart");
+  el.innerHTML = data.map(d => `
+    <div class="bar-group">
+      <div class="bars">
+        <div class="bar"   style="height: ${(d.a/max*170)}px"></div>
+        <div class="bar b" style="height: ${(d.b/max*170)}px"></div>
+      </div>
+      <div class="bar-label">${d.label}</div>
+    </div>
+  `).join("");
+}
+
+// Sales canvas chart (combined line + bar)
+function renderSalesChart() {
+  const canvas = document.getElementById("salesChart");
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  canvas.width = w * dpr; canvas.height = h * dpr;
+  ctx.scale(dpr, dpr);
+
+  const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const revenue = [120, 148, 132, 175, 162, 198, 185];
+  const orders  = [32, 41, 38, 48, 44, 56, 52];
+
+  const padL = 36, padR = 12, padT = 16, padB = 28;
+  const cw = w - padL - padR;
+  const ch = h - padT - padB;
+  const maxR = 220;
+
+  // Grid
+  ctx.strokeStyle = "#E4D8C4";
+  ctx.lineWidth = 1;
+  ctx.font = "10px 'IBM Plex Mono', monospace";
+  ctx.fillStyle = "#7A6E63";
+  for (let i = 0; i <= 4; i++) {
+    const y = padT + (ch / 4) * i;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + cw, y); ctx.stroke();
+    ctx.fillText(Math.round(maxR - (maxR/4)*i) + "k", 4, y + 3);
+  }
+
+  // Bars (orders, scaled)
+  const barW = cw / labels.length * 0.4;
+  const maxO = 60;
+  ctx.fillStyle = "#C9A55C";
+  labels.forEach((_, i) => {
+    const x = padL + (cw / labels.length) * (i + 0.5) - barW/2;
+    const bh = (orders[i] / maxO) * ch * 0.85;
+    ctx.fillRect(x, padT + ch - bh, barW, bh);
+  });
+
+  // Revenue line
+  ctx.strokeStyle = "#4A2C6E";
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  revenue.forEach((v, i) => {
+    const x = padL + (cw / labels.length) * (i + 0.5);
+    const y = padT + ch - (v / maxR) * ch;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Revenue dots
+  ctx.fillStyle = "#4A2C6E";
+  revenue.forEach((v, i) => {
+    const x = padL + (cw / labels.length) * (i + 0.5);
+    const y = padT + ch - (v / maxR) * ch;
+    ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI*2); ctx.fill();
+  });
+
+  // X-labels
+  ctx.fillStyle = "#7A6E63";
+  labels.forEach((lab, i) => {
+    const x = padL + (cw / labels.length) * (i + 0.5);
+    ctx.fillText(lab, x - 10, h - 8);
+  });
+}
+
+// Inbox list (overview)
+function renderInbox(target, items, limit) {
+  const list = items.slice(0, limit || items.length);
+  target.innerHTML = list.map(c => `
+    <div class="conv ${c.unread ? 'unread' : ''}">
+      <div class="avatar">${initials(c.name)}</div>
+      <div class="conv-body">
+        <div class="conv-top">
+          <span class="conv-name">${c.name} ${channelPill(c.channel)}</span>
+          <span class="conv-time">${c.time}</span>
+        </div>
+        <div class="conv-snip">${c.snippet}</div>
+      </div>
+    </div>
+  `).join("");
+}
+
+// Top customers
+function renderTopCustomers() {
+  const top = [...customers].sort((a,b) => b.ltv - a.ltv).slice(0, 5);
+  document.getElementById("topCustomers").innerHTML = top.map(c => `
+    <div class="conv">
+      <div class="avatar">${c.avatar}</div>
+      <div class="conv-body">
+        <div class="conv-top">
+          <span class="conv-name">${c.name}</span>
+          <span class="ltv">฿${c.ltv.toLocaleString()}</span>
+        </div>
+        <div class="conv-snip">${c.orders} orders · ${c.branch === 'bkk' ? 'Bangkok' : 'Lampang'}</div>
+      </div>
+    </div>
+  `).join("");
+}
+
+// Pipeline
+function renderPipeline(target) {
+  target.innerHTML = leadStages.map(s => `
+    <div class="stage">
+      <div class="stage-head">
+        <div class="stage-name">${s.name}</div>
+        <div class="stage-count">${s.count}</div>
+      </div>
+      ${s.leads.map(l => `
+        <div class="lead-card">
+          <div class="who">${l.who}</div>
+          <div class="meta">${l.meta}</div>
+        </div>
+      `).join("")}
+      ${s.leads.length < 3 ? '<div class="muted small" style="text-align:center;padding:4px;">+ more</div>' : ''}
+    </div>
+  `).join("");
+}
+
+/* ============ RENDER: CUSTOMERS ============ */
+function renderCustomers(filter = "") {
+  const f = filter.toLowerCase();
+  const list = customers.filter(c =>
+    c.name.toLowerCase().includes(f) ||
+    c.phone.includes(f) ||
+    c.line.toLowerCase().includes(f)
+  );
+  document.getElementById("customerList").innerHTML = list.map(c => `
+    <div class="customer-row">
+      <div class="avatar">${c.avatar}</div>
+      <div>
+        <div class="c-name">${c.name}</div>
+        <div class="c-sub">${c.branch === 'bkk' ? 'Bangkok' : 'Lampang'}</div>
+      </div>
+      <div>
+        <div class="small">${c.phone}</div>
+        <div class="c-sub">LINE: ${c.line}</div>
+      </div>
+      <div>${c.tags.map(tagPill).join(" ")}</div>
+      <div class="ltv">฿${c.ltv.toLocaleString()}</div>
+      <div class="mono small">${c.orders}</div>
+    </div>
+  `).join("") || `<div class="muted" style="padding:24px;text-align:center;">No matches.</div>`;
+}
+
+/* ============ RENDER: QUOTES ============ */
+function renderQuotes() {
+  document.getElementById("quotesTable").innerHTML = quotes.map(q => `
+    <tr>
+      <td><strong>${q.who}</strong></td>
+      <td>${q.product}</td>
+      <td class="mono">${q.price}</td>
+      <td>${channelPill(q.channel)}</td>
+      <td>${q.days}d</td>
+      <td><span class="pill ${q.status === 'pending' ? 'pending' : q.status === 'negotiating' ? 'open' : 'closed'}">${q.status.toUpperCase()}</span></td>
+    </tr>
+  `).join("");
+}
+
+/* ============ RENDER: SHIPPING ============ */
+function renderShipping() {
+  const labels = { transit: "In transit", delivered: "Delivered", pickup: "Picked up", failed: "Failed" };
+  document.getElementById("shipTable").innerHTML = shipments.map(s => `
+    <tr>
+      <td class="mono">${s.tracking}</td>
+      <td><strong>${s.who}</strong></td>
+      <td>${s.branch}</td>
+      <td class="mono">${s.cod}</td>
+      <td class="muted small">${s.updated}</td>
+      <td><span class="ship-status ${s.status}"><span class="dot"></span>${labels[s.status]}</span></td>
+    </tr>
+  `).join("");
+}
+
+/* ============ RENDER: TEAM ============ */
+function renderTeam() {
+  document.getElementById("teamTable").innerHTML = team.map((t, i) => `
+    <tr>
+      <td><strong>${i === 0 ? '🏆 ' : ''}${t.name}</strong></td>
+      <td>${t.branch}</td>
+      <td class="mono">${t.chats}</td>
+      <td class="mono">${t.rt}</td>
+      <td class="mono"><strong>${t.closed}</strong></td>
+      <td class="ltv">${t.rev}</td>
+    </tr>
+  `).join("");
+}
+
+/* ============ RENDER: ANALYTICS ============ */
+function renderTopProducts() {
+  const max = Math.max(...topProducts.flatMap(p => [p.bkk, p.lpg]));
+  document.getElementById("topProducts").innerHTML = topProducts.map(p => `
+    <div style="margin-bottom:12px;">
+      <div class="flex-between small" style="margin-bottom:4px;">
+        <strong>${p.name}</strong>
+        <span class="muted mono">${p.bkk + p.lpg} units</span>
+      </div>
+      <div style="display:flex;gap:4px;height:14px;">
+        <div style="background:var(--purple);width:${p.bkk/max*60}%;border-radius:3px;"></div>
+        <div style="background:var(--terra);width:${p.lpg/max*60}%;border-radius:3px;"></div>
+      </div>
+    </div>
+  `).join("") + `
+    <div class="legend mt-12">
+      <span><span class="dot" style="background:var(--purple)"></span>Bangkok</span>
+      <span><span class="dot" style="background:var(--terra)"></span>Lampang</span>
+    </div>
+  `;
+}
+
+function renderCAC() {
+  const max = Math.max(...cacData.map(d => d.cost));
+  document.getElementById("cacChart").innerHTML = cacData.map(d => `
+    <div style="margin-bottom:10px;">
+      <div class="flex-between small" style="margin-bottom:3px;">
+        <span>${d.ch}</span>
+        <strong class="mono">฿${d.cost}</strong>
+      </div>
+      <div style="height:10px;background:var(--cream-deep);border-radius:5px;overflow:hidden;">
+        <div style="height:100%;width:${d.cost/max*100}%;background:${d.color};border-radius:5px;"></div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderHoursChart() {
+  const canvas = document.getElementById("hoursChart");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  canvas.width = w * dpr; canvas.height = h * dpr;
+  ctx.scale(dpr, dpr);
+
+  const hours = Array.from({length: 24}, (_, i) => i);
+  const counts = [2,1,1,0,0,1,3,8,18,28,42,38,52,46,38,42,55,68,58,42,28,18,12,6];
+  const max = Math.max(...counts);
+  const padL = 30, padR = 12, padT = 12, padB = 24;
+  const cw = w - padL - padR, ch = h - padT - padB;
+
+  // Area
+  ctx.fillStyle = "rgba(74,44,110,0.15)";
+  ctx.strokeStyle = "#4A2C6E";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  hours.forEach((h, i) => {
+    const x = padL + (cw / 23) * i;
+    const y = padT + ch - (counts[i] / max) * ch;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.lineTo(padL + cw, padT + ch);
+  ctx.lineTo(padL, padT + ch);
+  ctx.closePath();
+  ctx.fill();
+
+  // Line again on top
+  ctx.beginPath();
+  hours.forEach((h, i) => {
+    const x = padL + (cw / 23) * i;
+    const y = padT + ch - (counts[i] / max) * ch;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  ctx.fillStyle = "#7A6E63";
+  ctx.font = "10px 'IBM Plex Mono', monospace";
+  [0,6,12,18,23].forEach(i => {
+    const x = padL + (cw / 23) * i;
+    ctx.fillText(i + "h", x - 6, h - 6);
+  });
+}
+
+function renderLostReasons() {
+  document.getElementById("lostReasons").innerHTML = lostReasons.map(r => `
+    <div style="margin-bottom:10px;">
+      <div class="flex-between small" style="margin-bottom:3px;">
+        <span>${r.reason}</span>
+        <strong class="mono">${r.pct}%</strong>
+      </div>
+      <div style="height:8px;background:var(--cream-deep);border-radius:4px;overflow:hidden;">
+        <div style="height:100%;width:${r.pct*2}%;background:var(--terra);border-radius:4px;"></div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderSourceChart() {
+  const max = Math.max(...sourcePerf.map(s => s.pct));
+  document.getElementById("sourceChart").innerHTML = sourcePerf.map(s => `
+    <div style="margin-bottom:10px;">
+      <div class="flex-between small" style="margin-bottom:3px;">
+        <span>${s.source}</span>
+        <strong class="mono">${s.pct}%</strong>
+      </div>
+      <div style="height:10px;background:var(--cream-deep);border-radius:5px;overflow:hidden;">
+        <div style="height:100%;width:${s.pct/max*100}%;background:${s.color};border-radius:5px;"></div>
+      </div>
+    </div>
+  `).join("");
+}
+
+/* ============ NAV ============ */
+const pages = document.querySelectorAll(".page");
+const navItems = document.querySelectorAll(".nav-item");
+const titles = {
+  overview: "Overview",
+  inbox: "Inbox",
+  customers: "Customers",
+  leads: "Leads",
+  quotes: "Quotes",
+  shipping: "Shipping",
+  analytics: "Analytics",
+  team: "Team",
+  reports: "Reports"
+};
+navItems.forEach(item => {
+  item.addEventListener("click", () => {
+    const page = item.dataset.page;
+    navItems.forEach(n => n.classList.remove("active"));
+    item.classList.add("active");
+    pages.forEach(p => p.classList.remove("active"));
+    document.getElementById("page-" + page).classList.add("active");
+    document.getElementById("pageTitle").textContent = titles[page];
+
+    // Lazy-render heavy charts when their page opens
+    if (page === "analytics") {
+      requestAnimationFrame(() => renderHoursChart());
+    }
+    if (page === "leads") {
+      renderPipeline(document.getElementById("pipelineFull"));
+    }
+  });
+});
+
+// Customer search
+document.getElementById("custSearch").addEventListener("input", e => renderCustomers(e.target.value));
+
+// Branch select demo
+document.getElementById("branchSelect").addEventListener("change", e => {
+  // Animate a tiny number tweak to show interactivity
+  const base = { all: "฿184,520", bkk: "฿112,380", lpg: "฿72,140" };
+  document.getElementById("kpi-revenue").textContent = base[e.target.value];
+});
+
+/* ============ INIT ============ */
+renderSocialChart();
+renderInbox(document.getElementById("inboxList"), conversations, 6);
+renderInbox(document.getElementById("inboxFull"), conversations);
+renderTopCustomers();
+renderPipeline(document.getElementById("pipeline"));
+renderCustomers();
+renderQuotes();
+renderShipping();
+renderTeam();
+renderTopProducts();
+renderCAC();
+renderLostReasons();
+renderSourceChart();
+
+// Wait for canvas to have a size
+requestAnimationFrame(() => {
+  renderSalesChart();
+});
+
+window.addEventListener("resize", () => {
+  renderSalesChart();
+  if (document.getElementById("page-analytics").classList.contains("active")) renderHoursChart();
+});
+</script>
+
+</body>
+</html>
